@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Api";
+
+package rent.v1;
+
+service Rent {
+  rpc StartRent (StartRentRequest) returns (StartRentResponse);
+  rpc CompleteRent (CompleteRentRequest) returns (CompleteRentResponse);
+  rpc GetAllCurrentRents (GetAllCurrentRentsRequest) returns (GetAllCurrentRentsResponse);
+  rpc GetRentById (GetRentByIdRequest) returns (GetRentByIdResponse);
+  rpc GetCurrentAmountRent (GetCurrentAmountRentRequest) returns (GetCurrentAmountRentResponse);
+}
+
+enum RentStatus{
+  IN_PROGRESS_UNSPECIFIED = 0;
+  COMPLETED = 1;
+}
+
+
+// Commands
+message StartRentRequest{
+  string customer_id = 1;
+  string booking_id = 2;
+  string vehicle_id = 3;
+}
+message StartRentResponse{
+  string rent_id = 1;
+}
+
+message CompleteRentRequest{
+  string rent_id = 1;
+}
+message CompleteRentResponse{
+  double actual_amount = 1;
+}
+
+
+// Queries
+message GetAllCurrentRentsRequest{
+  int32 page = 1;
+  int32 page_size = 2;
+}
+message GetAllCurrentRentsResponse{
+  repeated CurrentRent rents = 1;
+  message CurrentRent{
+    string rent_id = 1;
+    string vehicle_id = 2;
+    string customer_id = 3;
+    google.protobuf.Timestamp start = 4;
+  }
+}
+
+
+message GetRentByIdRequest{
+  string rent_id = 1;
+}
+message GetRentByIdResponse{
+  string rent_id = 1;
+  RentStatus status = 2;
+  string booking_id = 3;
+  string customer_id = 4;
+  string vehicle_id = 5;
+  google.protobuf.Timestamp start = 6;
+  optional google.protobuf.Timestamp end = 7;
+  optional double actual_amount = 8;
+}
+
+
+message GetCurrentAmountRentRequest{
+  string rent_id = 1;
+}
+message GetCurrentAmountRentResponse{
+  string rent_id = 1;
+  double current_amount = 2;
+}

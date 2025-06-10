@@ -1,0 +1,220 @@
+syntax = "proto3";
+
+option csharp_namespace = "Proto.VehicleFleetV1";
+
+package VehicleFleet.v1;
+
+service VehicleFleet {
+  // Model
+  rpc AddModel (AddModelReq) returns (AddModelRes);
+  rpc UpdateModelCategory (UpdateModelCategoryReq) returns (UpdateModelCategoryRes);
+  rpc UpdateModelTariff (UpdateModelTariffReq) returns (UpdateModelTariffRes);
+  rpc GetAllModels (GetAllModelsReq) returns (GetAllModelsRes);
+  rpc GetModelById (GetModelByIdReq) returns (GetModelByIdRes);
+
+  // Vehicle
+  rpc AddVehicle (AddVehicleReq) returns (AddVehicleRes);
+  rpc MarkAsReadiedForReleaseVehicle (MarkAsReadiedForReleaseVehicleReq) returns (MarkAsReadiedForReleaseVehicleRes);
+  rpc ReleaseVehicle (ReleaseVehicleReq) returns (ReleaseVehicleRes);
+  rpc SendToServiceVehicle (SendToServiceVehicleReq) returns (SendToServiceVehicleRes);
+  rpc DeleteVehicle (DeleteVehicleReq) returns (DeleteVehicleRes);
+  rpc GetAllVehicles (GetAllVehiclesReq) returns (GetAllVehiclesRes);
+  rpc GetVehiclesInSquare (GetVehiclesInSquareReq) returns (GetVehiclesInSquareRes);
+  rpc GetVehicleById (GetVehicleByIdReq) returns (GetVehicleByIdRes);
+  rpc GetVehicleDetailsById (GetVehicleDetailsByIdReq) returns (GetVehicleDetailsByIdRes);
+}
+
+message Location {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+enum Color{
+  WHITE_UNSPECIFIED = 0;
+  GREY = 1;
+  BLACK = 2;
+  BLUE = 3;
+  RED = 4;
+  YELLOW = 5;
+  ORANGE = 6;
+  GREEN = 7;
+  BEIGE = 8;
+}
+
+enum Status{
+  ADDING_IN_PROGRESS = 0;
+  ADDED = 1;
+  NOT_ADDED = 2;
+  READIED_FOR_RELEASE = 3;
+  RELEASED_UNSPECIFIED = 4;
+  OCCUPIED = 5;
+  SERVICED = 6;
+  DELETED = 7;
+}
+
+
+// Model
+message AddModelReq{
+  string brand = 1;
+  string car_model = 2;
+  string category = 3;
+  double price_per_min = 4;
+  double price_per_hour = 5;
+  double price_per_day = 6;
+}
+message AddModelRes{
+  string model_id = 1;
+}
+
+
+message UpdateModelCategoryReq{
+  string model_id = 1;
+  string category = 2;
+}
+message UpdateModelCategoryRes{}
+
+
+message UpdateModelTariffReq{
+  string model_id = 1;
+  optional double price_per_min = 2;
+  optional double price_per_hour = 3;
+  optional double price_per_day = 4;
+}
+message UpdateModelTariffRes{}
+
+
+message GetAllModelsReq{
+  optional int32 page = 1;
+  optional int32 page_size = 2;
+}
+message GetAllModelsRes{
+  repeated ModelShortView models = 1;
+
+  message ModelShortView{
+    string model_id = 1;
+    string brand = 2;
+    string car_model = 3;
+  }
+}
+
+
+message GetModelByIdReq{
+  string model_id = 1;
+}
+message GetModelByIdRes{
+  string model_id = 1;
+  string brand = 2;
+  string car_model = 3;
+  string category = 4;
+  double price_per_min = 5;
+  double price_per_hour = 6;
+  double price_per_day = 7;
+}
+
+
+
+// Vehicle
+message AddVehicleReq{
+  string model_id = 1;
+  string plate_number = 2;
+  Color color = 3;
+  string vin = 4;
+  optional Location location = 5;
+}
+message AddVehicleRes{
+  string vehicle_id = 1;
+}
+
+
+message MarkAsReadiedForReleaseVehicleReq{
+  string vehicle_id = 1;
+}
+message MarkAsReadiedForReleaseVehicleRes{}
+
+
+message ReleaseVehicleReq{
+  string vehicle_id = 1;
+}
+message ReleaseVehicleRes{}
+
+
+message SendToServiceVehicleReq{
+  string vehicle_id = 1;
+}
+message SendToServiceVehicleRes{}
+
+
+message DeleteVehicleReq{
+  string vehicle_id = 1;
+}
+message DeleteVehicleRes{}
+
+
+message GetAllVehiclesReq{
+  Status filtering_status = 1;
+  optional int32 page = 2;
+  optional int32 page_size = 3;
+}
+message GetAllVehiclesRes{
+  repeated VehicleShortView vehicles = 1;
+
+  message VehicleShortView{
+    string vehicle_id = 1;
+    string brand = 2;
+    string car_model = 3;
+    Color color = 4;
+    Location location = 5;
+  }
+}
+
+
+message GetVehicleByIdReq{
+  string vehicle_id = 1;
+}
+message GetVehicleByIdRes{
+  string vehicle_id = 1;
+  Status status = 2;
+  string brand = 3;
+  string car_model = 4;
+  Color color = 5;
+  string plate_number = 6;
+  int32 fuel_level_percents = 7;
+  Location location = 8;
+  double price_per_min = 9;
+  double price_per_hour = 10;
+}
+
+message GetVehicleDetailsByIdReq{
+  string vehicle_id = 1;
+}
+message GetVehicleDetailsByIdRes{
+  string vehicle_id = 1;
+  Status status = 2;
+  string brand = 3;
+  string car_model = 4;
+  Color color = 5;
+  string plate_number = 6;
+  string vin = 7;
+  int32 fuel_level_percents = 8;
+  Location location = 9;
+  double price_per_min = 10;
+  double price_per_hour = 11;
+  double price_per_day = 12;
+}
+
+message GetVehiclesInSquareReq{
+  Status filtering_status = 1;
+  Location upper_left_location = 2;
+  Location lower_right_location = 3;
+}
+message GetVehiclesInSquareRes{
+  repeated VehicleInSquareShortView vehicles = 1;
+
+  message VehicleInSquareShortView{
+    string vehicle_id = 1;
+    string brand = 2;
+    string car_model = 3;
+    Color color = 4;
+    Location location = 5;
+  }
+}

@@ -1,0 +1,1920 @@
+openapi: 3.0.0
+info:
+  title: Employee BFF
+  version: 1.0.0
+  description: BFF для работы с приложениями сотрудников
+tags:
+  - name: identity
+    description: аутентификация, авторизация, создание и восстановление аккаунта клиента
+  - name: model
+    description: модели автомобилей доступные для аренды
+  - name: driving-license
+    description: управление водительским удостоверением
+  - name: vehicle
+    description: автомобили доступные для аренды
+  - name: booking
+    description: бронирование автомобилей
+  - name: vehicle-check
+    description: проверка автомобиля клиентом перед арендой
+  - name: rent
+    description: аренда автомобилей
+  - name: vehicle-documents
+    description: управление документами на автомобиль (ОСАГО, ПТС, СТС)
+paths:
+  /v1.0/identity/authenticate:
+    post:
+      operationId: authenticate
+      tags:
+        - identity
+      summary: Аутентификация аккаунта
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticateRequest'
+      responses:
+        '200':
+          description: Успешная операция
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticateResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+        '404':
+          description: Аккаунт с таким идентификатором не найден
+  /v1.0/identity/account/create:
+    post:
+      operationId: createAccount
+      tags:
+        - identity
+      summary: Создание аккаунта
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequest'
+      responses:
+        '201':
+          description: Аккаунт успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+  /v1.0/identity/{accountId}/confirmation-token/{confirmationToken}/confirm:
+    post:
+      operationId: confirmAccountEmail
+      tags:
+        - identity
+      summary: Подтверждение email аккаунта
+      parameters:
+        - name: accountId
+          in: path
+          description: Идентификатор аккаунта
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: confirmationToken
+          in: path
+          description: Токен подтверждения
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешная операция
+        '500':
+          description: Внутренняя ошибка сервера
+        '404':
+          description: Токен подтверждения не найден
+  /v1.0/identity/refresh-access-token:
+    post:
+      operationId: refreshAccessToken
+      tags:
+        - identity
+      summary: Обновление токена доступа
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshAccessTokenRequest'
+      responses:
+        '200':
+          description: Успешная операция
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshAccessTokenResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+        '404':
+          description: Refresh token с таким идентификатором не найден
+  /v1.0/identity/account/{accountId}/recover-password:
+    post:
+      operationId: recoverPassword
+      tags:
+        - identity
+      summary: Восстановление пароля
+      parameters:
+        - name: accountId
+          in: path
+          description: Идентификатор аккаунта
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoverPasswordRequest'
+      responses:
+        '200':
+          description: Успешная операция
+        '500':
+          description: Внутренняя ошибка сервера
+        '404':
+          description: Аккаунт с таким идентификатором не найден
+  /v1.0/identity/account/{accountId}/update-password:
+    post:
+      operationId: updatePassword
+      tags:
+        - identity
+      summary: Обновление пароля
+      parameters:
+        - name: accountId
+          in: path
+          description: Идентификатор аккаунта
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        '200':
+          description: Успешная операция
+        '500':
+          description: Внутренняя ошибка сервера
+        '404':
+          description: Аккаунт с таким идентификатором не найден
+  /v1.0/checks/{checkId}:
+    get:
+      tags:
+        - vehicle-check
+      summary: Get Check by ID
+      operationId: getCheckById
+      description: Получает информацию о проверке по её уникальному идентификатору.
+      parameters:
+        - in: path
+          name: checkId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор проверки.
+      responses:
+        '200':
+          description: Успешный ответ с информацией о проверке.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCheckByIdResponse'
+        '404':
+          description: Проверка с указанным ID не найдена.
+  /v1.0/checks/for-review:
+    get:
+      tags:
+        - vehicle-check
+      summary: Get All Checks for Considerate Review
+      operationId: getAllChecksForConsiderateReview
+      description: Получает список всех проверок, требующих внимательного рассмотрения.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            format: int32
+          required: false
+          description: Номер страницы для пагинации.
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            format: int32
+          required: false
+          description: Количество элементов на странице для пагинации.
+      responses:
+        '200':
+          description: Успешный ответ со списком проверок.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllChecksForConsiderateReviewResponse'
+  /v1.0/models:
+    post:
+      tags:
+        - model
+      summary: Add New Model
+      operationId: addModel
+      description: Добавляет новую модель автомобиля.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddModelReq'
+      responses:
+        '200':
+          description: Модель успешно добавлена.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddModelRes'
+        '400':
+          description: Некорректный запрос.
+    get:
+      tags:
+        - model
+      summary: Get All Models
+      operationId: getAllModels
+      description: Получает список всех доступных моделей автомобилей.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            format: int32
+          required: false
+          description: Номер страницы для пагинации.
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            format: int32
+          required: false
+          description: Количество элементов на странице для пагинации.
+      responses:
+        '200':
+          description: Успешный ответ со списком моделей.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllModelsRes'
+  /v1.0/models/{modelId}:
+    get:
+      tags:
+        - model
+      summary: Get Model by ID
+      operationId: getModelById
+      description: Получает информацию о модели автомобиля по её уникальному идентификатору.
+      parameters:
+        - in: path
+          name: modelId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор модели.
+      responses:
+        '200':
+          description: Успешный ответ с информацией о модели.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetModelByIdRes'
+        '404':
+          description: Модель с указанным ID не найдена.
+  /v1.0/models/{modelId}/category:
+    patch:
+      tags:
+        - model
+      summary: Update Model Category
+      operationId: updateModelCategory
+      description: Обновляет категорию модели автомобиля.
+      parameters:
+        - in: path
+          name: modelId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор модели.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateModelCategoryReq'
+      responses:
+        '200':
+          description: Категория модели успешно обновлена.
+        '400':
+          description: Некорректный запрос.
+        '404':
+          description: Модель с указанным ID не найдена.
+  /v1.0/models/{modelId}/tariff:
+    patch:
+      tags:
+        - model
+      summary: Update Model Tariff
+      operationId: updateModelTariff
+      description: Обновляет тарифы модели автомобиля.
+      parameters:
+        - in: path
+          name: modelId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор модели.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateModelTariffReq'
+      responses:
+        '200':
+          description: Тарифы модели успешно обновлены.
+        '400':
+          description: Некорректный запрос.
+        '404':
+          description: Модель с указанным ID не найдена.
+  /v1.0/vehicles:
+    post:
+      tags:
+        - vehicle
+      summary: Add New Vehicle
+      operationId: addVehicle
+      description: Добавляет новый автомобиль в автопарк.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddVehicleReq'
+      responses:
+        '200':
+          description: Автомобиль успешно добавлен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddVehicleRes'
+        '400':
+          description: Некорректный запрос.
+    get:
+      tags:
+        - vehicle
+      summary: Get All Vehicles
+      operationId: getAllVehicles
+      description: Получает список всех автомобилей с возможностью фильтрации по статусу.
+      parameters:
+        - in: query
+          name: filteringStatus
+          schema:
+            $ref: '#/components/schemas/Status'
+          required: true
+          description: Статус для фильтрации автомобилей.
+        - in: query
+          name: page
+          schema:
+            type: integer
+            format: int32
+          required: false
+          description: Номер страницы для пагинации.
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            format: int32
+          required: false
+          description: Количество элементов на странице для пагинации.
+      responses:
+        '200':
+          description: Успешный ответ со списком автомобилей.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllVehiclesRes'
+  /v1.0/vehicles/{vehicleId}:
+    get:
+      tags:
+        - vehicle
+      summary: Get Vehicle by ID
+      operationId: getVehicleById
+      description: Получает краткую информацию об автомобиле по его уникальному идентификатору.
+      parameters:
+        - in: path
+          name: vehicleId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор автомобиля.
+      responses:
+        '200':
+          description: Успешный ответ с краткой информацией об автомобиле.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVehicleByIdRes'
+        '404':
+          description: Автомобиль с указанным ID не найден.
+    delete:
+      tags:
+        - vehicle
+      summary: Delete Vehicle
+      operationId: deleteVehicle
+      description: Удаляет автомобиль из автопарка.
+      parameters:
+        - in: path
+          name: vehicleId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор автомобиля.
+      responses:
+        '200':
+          description: Автомобиль успешно удален.
+        '404':
+          description: Автомобиль с указанным ID не найден.
+  /v1.0/vehicles/{vehicleId}/details:
+    get:
+      tags:
+        - vehicle
+      summary: Get Vehicle Details by ID
+      operationId: getVehicleDetailsById
+      description: Получает подробную информацию об автомобиле по его уникальному идентификатору.
+      parameters:
+        - in: path
+          name: vehicleId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор автомобиля.
+      responses:
+        '200':
+          description: Успешный ответ с подробной информацией об автомобиле.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVehicleDetailsByIdRes'
+        '404':
+          description: Автомобиль с указанным ID не найден.
+  /v1.0/vehicles/{vehicleId}/mark-as-readied-for-release:
+    post:
+      tags:
+        - vehicle
+      summary: Mark Vehicle as Readied for Release
+      operationId: markAsReadiedForReleaseVehicle
+      description: Отмечает автомобиль как подготовленный к выпуску.
+      parameters:
+        - in: path
+          name: vehicleId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор автомобиля.
+      responses:
+        '200':
+          description: Автомобиль успешно отмечен как подготовленный к выпуску.
+        '404':
+          description: Автомобиль с указанным ID не найден.
+  /v1.0/vehicles/{vehicleId}/release:
+    post:
+      tags:
+        - vehicle
+      summary: Release Vehicle
+      operationId: releaseVehicle
+      description: Выпускает автомобиль в аренду.
+      parameters:
+        - in: path
+          name: vehicleId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор автомобиля.
+      responses:
+        '200':
+          description: Автомобиль успешно выпущен.
+        '404':
+          description: Автомобиль с указанным ID не найден.
+  /v1.0/vehicles/{vehicleId}/send-to-service:
+    post:
+      tags:
+        - vehicle
+      summary: Send Vehicle to Service
+      operationId: sendToServiceVehicle
+      description: Отправляет автомобиль на обслуживание.
+      parameters:
+        - in: path
+          name: vehicleId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор автомобиля.
+      responses:
+        '200':
+          description: Автомобиль успешно отправлен на обслуживание.
+        '404':
+          description: Автомобиль с указанным ID не найден.
+  /v1.0/vehicles/in-square:
+    post:
+      tags:
+        - vehicle
+      summary: Get Vehicles in Square
+      operationId: getVehiclesInSquare
+      description: Получает список автомобилей, находящихся в заданном квадратном регионе.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetVehiclesInSquareReq'
+      responses:
+        '200':
+          description: Успешный ответ со списком автомобилей в указанном регионе.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVehiclesInSquareRes'
+        '400':
+          description: Некорректные координаты или статус.
+  /v1.0/vehicle-documents/{vehicleDocumentsId}/osago:
+    post:
+      tags:
+        - vehicle-documents
+      summary: Add OSAGO
+      operationId: addOsago
+      description: Добавляет информацию об ОСАГО для документов на автомобиль.
+      parameters:
+        - in: path
+          name: vehicleDocumentsId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор комплекта документов на автомобиль.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOsagoRequest'
+      responses:
+        '200':
+          description: Информация об ОСАГО успешно добавлена.
+        '400':
+          description: Некорректный запрос.
+        '404':
+          description: Документы на автомобиль с указанным ID не найдены.
+    get:
+      tags:
+        - vehicle-documents
+      summary: Get OSAGO by Vehicle Documents ID
+      operationId: getOsagoByVehicleDocumentsId
+      description: Получает информацию об ОСАГО по идентификатору комплекта документов на автомобиль.
+      parameters:
+        - in: path
+          name: vehicleDocumentsId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор комплекта документов на автомобиль.
+      responses:
+        '200':
+          description: Успешный ответ с информацией об ОСАГО.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOsagoByVehicleDocumentsIdResponse'
+        '404':
+          description: Информация об ОСАГО или документы на автомобиль не найдены.
+  /v1.0/vehicle-documents/{vehicleDocumentsId}/pts:
+    post:
+      tags:
+        - vehicle-documents
+      summary: Add PTS
+      operationId: addPts
+      description: Добавляет информацию о ПТС для документов на автомобиль.
+      parameters:
+        - in: path
+          name: vehicleDocumentsId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор комплекта документов на автомобиль.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPtsRequest'
+      responses:
+        '200':
+          description: Информация о ПТС успешно добавлена.
+        '400':
+          description: Некорректный запрос.
+        '404':
+          description: Документы на автомобиль с указанным ID не найдены.
+    get:
+      tags:
+        - vehicle-documents
+      summary: Get PTS by Vehicle Documents ID
+      operationId: getPtsByVehicleDocumentsId
+      description: Получает информацию о ПТС по идентификатору комплекта документов на автомобиль.
+      parameters:
+        - in: path
+          name: vehicleDocumentsId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор комплекта документов на автомобиль.
+      responses:
+        '200':
+          description: Успешный ответ с информацией о ПТС.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPtsByVehicleDocumentsIdResponse'
+        '404':
+          description: Информация о ПТС или документы на автомобиль не найдены.
+  /v1.0/vehicle-documents/{vehicleDocumentsId}/sts:
+    post:
+      tags:
+        - vehicle-documents
+      summary: Add STS
+      operationId: addSts
+      description: Добавляет информацию о СТС для документов на автомобиль.
+      parameters:
+        - in: path
+          name: vehicleDocumentsId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор комплекта документов на автомобиль.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddStsRequest'
+      responses:
+        '200':
+          description: Информация о СТС успешно добавлена.
+        '400':
+          description: Некорректный запрос.
+        '404':
+          description: Документы на автомобиль с указанным ID не найдены.
+    get:
+      tags:
+        - vehicle-documents
+      summary: Get STS by Vehicle Documents ID
+      operationId: getStsByVehicleDocumentsId
+      description: Получает информацию о СТС по идентификатору комплекта документов на автомобиль.
+      parameters:
+        - in: path
+          name: vehicleDocumentsId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор комплекта документов на автомобиль.
+      responses:
+        '200':
+          description: Успешный ответ с информацией о СТС.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetStsByVehicleDocumentsIdResponse'
+        '404':
+          description: Информация о СТС или документы на автомобиль не найдены.
+  /v1.0/vehicle-documents:
+    get:
+      tags:
+        - vehicle-documents
+      summary: Get Vehicle Documents by Vehicle ID
+      operationId: getVehicleDocumentsByVehicleId
+      description: Получает статус наличия документов (ПТС, СТС, ОСАГО) для указанного автомобиля.
+      parameters:
+        - in: query
+          name: vehicleId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор автомобиля.
+      responses:
+        '200':
+          description: Успешный ответ со статусом документов автомобиля.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVehicleDocumentsByVehicleIdResponse'
+        '404':
+          description: Документы для указанного автомобиля не найдены.
+  /v1.0/rents:
+    get:
+      tags:
+        - rent
+      summary: Get All Current Rents
+      operationId: getAllCurrentRents
+      description: Получает список всех текущих аренд.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: Номер страницы для пагинации.
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            format: int32
+          required: true
+          description: Количество элементов на странице для пагинации.
+      responses:
+        '200':
+          description: Успешный ответ со списком текущих аренд.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllCurrentRentsResponse'
+        '400':
+          description: Некорректные параметры пагинации.
+  /v1.0/rents/{rentId}:
+    get:
+      tags:
+        - rent
+      summary: Get Rent by ID
+      operationId: getRentById
+      description: Получает полную информацию об аренде по её уникальному идентификатору.
+      parameters:
+        - in: path
+          name: rentId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор аренды.
+      responses:
+        '200':
+          description: Успешный ответ с информацией об аренде.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRentByIdResponse'
+        '404':
+          description: Аренда с указанным ID не найдена.
+  /v1.0/rents/{rentId}/current-amount:
+    get:
+      tags:
+        - rent
+      summary: Get Current Amount Rent
+      operationId: getCurrentAmountRent
+      description: Получает текущую стоимость аренды по её уникальному идентификатору.
+      parameters:
+        - in: path
+          name: rentId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор аренды.
+      responses:
+        '200':
+          description: Успешный ответ с текущей стоимостью аренды.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCurrentAmountRentResponse'
+        '404':
+          description: Аренда с указанным ID не найдена.
+  /v1.0/driving-licenses/{licenseId}:
+    get:
+      tags:
+        - driving-license
+      summary: Get Driving License by ID
+      operationId: getLicenseById
+      description: Получает информацию о водительском удостоверении по его уникальному идентификатору.
+      parameters:
+        - in: path
+          name: licenseId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор водительского удостоверения.
+      responses:
+        '200':
+          description: Успешный ответ с информацией о водительском удостоверении.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLicenseByIdResponse'
+        '404':
+          description: Водительское удостоверение с указанным ID не найдено.
+  /v1.0/driving-licenses:
+    get:
+      tags:
+        - driving-license
+      summary: Get All Driving Licenses
+      operationId: getAllLicenses
+      description: Получает список всех водительских удостоверений с возможностью фильтрации по статусу.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            format: int32
+          required: false
+          description: Номер страницы для пагинации.
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            format: int32
+          required: false
+          description: Количество элементов на странице для пагинации.
+        - in: query
+          name: filteringStatus
+          schema:
+            $ref: '#/components/schemas/DrivingLicenseStatus'
+          required: true
+          description: Статус для фильтрации водительских удостоверений.
+      responses:
+        '200':
+          description: Успешный ответ со списком водительских удостоверений.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllLicensesResponse'
+        '400':
+          description: Некорректные параметры запроса.
+  /v1.0/driving-licenses/{licenseId}/approve:
+    post:
+      tags:
+        - driving-license
+      summary: Approve Driving License
+      operationId: approveLicense
+      description: Одобряет водительское удостоверение.
+      parameters:
+        - in: path
+          name: licenseId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор водительского удостоверения.
+      responses:
+        '200':
+          description: Водительское удостоверение успешно одобрено.
+        '404':
+          description: Водительское удостоверение с указанным ID не найдено.
+        '400':
+          description: Невозможно одобрить водительское удостоверение в текущем статусе.
+  /v1.0/driving-licenses/{licenseId}/reject:
+    post:
+      tags:
+        - driving-license
+      summary: Reject Driving License
+      operationId: rejectLicense
+      description: Отклоняет водительское удостоверение.
+      parameters:
+        - in: path
+          name: licenseId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Уникальный идентификатор водительского удостоверения.
+      responses:
+        '200':
+          description: Водительское удостоверение успешно отклонено.
+        '404':
+          description: Водительское удостоверение с указанным ID не найдено.
+        '400':
+          description: Невозможно отклонить водительское удостоверение в текущем статусе.
+components:
+  schemas:
+    Role:
+      type: string
+      enum:
+        - customer
+        - admin
+        - support
+        - maintenance
+        - hr
+      description: Роль работника в системе.
+    Error:
+      type: object
+      required:
+        - statusCode
+        - description
+      properties:
+        statusCode:
+          type: integer
+          example: 404
+          description: Код ошибки.
+        description:
+          type: string
+          example: "description"
+          description: Описание ошибки.
+    AuthenticateRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: "example@example.com"
+          description: Email работника.
+        password:
+          type: string
+          example: "password"
+          description: Пароль работника.
+    AuthenticateResponse:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          description: Токен доступа.
+        refreshToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          description: Токен для обновления доступа.
+    CreateRequest:
+      type: object
+      required:
+        - role
+        - email
+        - phone
+        - password
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+        email:
+          type: string
+          example: "example@example.com"
+          description: Email нового аккаунта.
+        phone:
+          type: string
+          example: "+79005008010"
+          description: Номер телефона нового аккаунта.
+        password:
+          type: string
+          example: "password"
+          description: Пароль для нового аккаунта.
+    CreateResponse:
+      type: object
+      required:
+        - accountId
+      properties:
+        accountId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: Уникальный идентификатор созданного аккаунта.
+    ConfirmEmailRequest:
+      type: object
+      required:
+        - confirmationToken
+      properties:
+        confirmationToken:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: Токен подтверждения email.
+    RefreshAccessTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          description: Токен обновления доступа.
+    RefreshAccessTokenResponse:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          description: Новый токен доступа.
+        refreshToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          description: Новый токен обновления доступа.
+    RecoverPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          example: "example@example.com"
+          description: Email аккаунта для восстановления пароля.
+    UpdatePasswordRequest:
+      type: object
+      required:
+        - newPassword
+        - email
+        - resetToken
+      properties:
+        newPassword:
+          type: string
+          example: "new-password"
+          description: Новый пароль.
+        email:
+          type: string
+          example: "example@example.com"
+          description: Email аккаунта.
+        resetToken:
+          type: string
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: Токен для сброса пароля.
+    GetCheckByIdResponse:
+      type: object
+      required:
+        - checkId
+        - bookingId
+        - vehicleId
+        - start
+      properties:
+        checkId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор проверки.
+        bookingId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор бронирования.
+        vehicleId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор автомобиля.
+        start:
+          type: string
+          format: date-time
+          description: Время начала проверки.
+        end:
+          type: string
+          format: date-time
+          description: Время конца проверки.
+        fixations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fixation'
+          description: Список фиксаций повреждений.
+    GetAllChecksForConsiderateReviewResponse:
+      type: object
+      required:
+        - checks
+      properties:
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckForReview'
+          description: Список проверок, требующих рассмотрения.
+    CheckForReview:
+      type: object
+      required:
+        - checkId
+        - bookingId
+        - vehicleId
+        - start
+      properties:
+        checkId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор проверки.
+        bookingId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор бронирования.
+        vehicleId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор автомобиля.
+        start:
+          type: string
+          format: date-time
+          description: Время начала проверки.
+        end:
+          type: string
+          format: date-time
+          description: Время окончания проверки.
+    Fixation:
+      type: object
+      required:
+        - s3Url
+        - category
+      properties:
+        s3Url:
+          type: string
+          description: URL изображения повреждения в S3 хранилище.
+        category:
+          $ref: '#/components/schemas/FixationCategory'
+        description:
+          type: string
+          description: Описание повреждения.
+    AddModelReq:
+      type: object
+      required:
+        - brand
+        - carModel
+        - category
+        - pricePerMin
+        - pricePerHour
+        - pricePerDay
+      properties:
+        brand:
+          type: string
+          description: Марка автомобиля.
+        carModel:
+          type: string
+          description: Название модели автомобиля.
+        category:
+          type: string
+          description: Категория автомобиля.
+        pricePerMin:
+          type: number
+          format: double
+          description: Стоимость аренды за минуту.
+        pricePerHour:
+          type: number
+          format: double
+          description: Стоимость аренды за час.
+        pricePerDay:
+          type: number
+          format: double
+          description: Стоимость аренды за день.
+    AddModelRes:
+      type: object
+      required:
+        - modelId
+      properties:
+        modelId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор добавленной модели.
+    GetAllModelsRes:
+      type: object
+      required:
+        - models
+      properties:
+        models:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModelShortView'
+          description: Список всех моделей автомобилей.
+    ModelShortView:
+      type: object
+      required:
+        - modelId
+        - brand
+        - carModel
+      properties:
+        modelId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор модели.
+        brand:
+          type: string
+          description: Марка автомобиля.
+        carModel:
+          type: string
+          description: Название модели автомобиля.
+    Model:
+      type: object
+      required:
+        - modelId
+        - brand
+        - carModel
+        - category
+        - pricePerMin
+        - pricePerHour
+        - pricePerDay
+      properties:
+        modelId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор модели.
+        brand:
+          type: string
+          description: Марка автомобиля.
+        carModel:
+          type: string
+          description: Название модели автомобиля.
+        year:
+          type: integer
+          description: Год выпуска автомобиля.
+        dailyRate:
+          type: number
+          format: double
+          description: Стоимость аренды за минуту.
+        hourlyRate:
+          type: number
+          format: double
+          description: Почасовая ставка аренды.
+        minuteRate:
+          type: number
+          format: double
+          description: Ставка за пробег.
+    GetModelByIdRes:
+      type: object
+      required:
+        - modelId
+        - brand
+        - carModel
+        - category
+        - pricePerMin
+        - pricePerHour
+        - pricePerDay
+      properties:
+        modelId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор модели.
+        brand:
+          type: string
+          description: Марка автомобиля.
+        carModel:
+          type: string
+          description: Название модели автомобиля.
+        category:
+          type: string
+          description: Категория автомобиля.
+        pricePerMin:
+          type: number
+          format: double
+          description: Стоимость аренды за минуту.
+        pricePerHour:
+          type: number
+          format: double
+          description: Стоимость аренды за час.
+        pricePerDay:
+          type: number
+          format: double
+          description: Стоимость аренды за день.
+    UpdateModelCategoryReq:
+      type: object
+      required:
+        - category
+      properties:
+        category:
+          type: string
+          description: Новая категория автомобиля.
+    UpdateModelTariffReq:
+      type: object
+      properties:
+        pricePerMin:
+          type: number
+          format: double
+          description: Новая стоимость аренды за минуту.
+        pricePerHour:
+          type: number
+          format: double
+          description: Новая стоимость аренды за час.
+        pricePerDay:
+          type: number
+          format: double
+          description: Новая стоимость аренды за день.
+    AddVehicleReq:
+      type: object
+      required:
+        - modelId
+        - plateNumber
+        - color
+        - vin
+      properties:
+        modelId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор модели автомобиля.
+        plateNumber:
+          type: string
+          description: Государственный номер автомобиля.
+        color:
+          $ref: '#/components/schemas/Color'
+        vin:
+          type: string
+          description: VIN-номер автомобиля.
+        location:
+          $ref: '#/components/schemas/Location'
+    AddVehicleRes:
+      type: object
+      required:
+        - vehicleId
+      properties:
+        vehicleId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор добавленного автомобиля.
+    Location:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: double
+          description: Широта.
+        longitude:
+          type: number
+          format: double
+          description: Долгота.
+    GetAllVehiclesRes:
+      type: object
+      required:
+        - vehicles
+      properties:
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleShortView'
+          description: Список всех автомобилей.
+    VehicleShortView:
+      type: object
+      required:
+        - vehicleId
+        - color
+        - brand
+        - carModel
+      properties:
+        vehicleId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор автомобиля.
+        color:
+          $ref: '#/components/schemas/Color'
+        brand:
+          type: string
+          description: Марка автомобиля.
+        carModel:
+          type: string
+          description: Название модели автомобиля.
+    Status:
+      type: string
+      enum:
+        - addingInProgress
+        - added
+        - notAdded
+        - readyForRelease
+        - releasedUnspecified
+        - occupied
+        - serviced
+        - deleted
+      description: Статус автомобиля.
+    GetVehicleByIdRes:
+      type: object
+      required:
+        - vehicleId
+        - status
+        - brand
+        - carModel
+        - color
+        - plateNumber
+        - fuelLevelPercents
+        - location
+        - pricePerMin
+        - pricePerHour
+      properties:
+        vehicleId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор автомобиля.
+        status:
+          $ref: '#/components/schemas/Status'
+        brand:
+          type: string
+          description: Марка автомобиля.
+        carModel:
+          type: string
+          description: Название модели автомобиля.
+        color:
+          $ref: '#/components/schemas/Color'
+        plateNumber:
+          type: string
+          description: Государственный номер автомобиля.
+        vin:
+          type: string
+          description: VIN-номер автомобиля.
+        fuelLevelPercents:
+          type: integer
+          description: Уровень топлива в процентах.
+        location:
+          $ref: '#/components/schemas/Location'
+        pricePerMin:
+          type: number
+          format: double
+          description: Стоимость аренды за минуту.
+        pricePerHour:
+          type: number
+          format: double
+          description: Стоимость аренды за час.
+    GetVehicleDetailsByIdRes:
+      type: object
+      required:
+        - vehicleId
+        - status
+        - brand
+        - carModel
+        - color
+        - plateNumber
+        - vin
+        - fuelLevelPercents
+        - location
+        - pricePerMin
+        - pricePerHour
+        - pricePerDay
+      properties:
+        vehicleId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор автомобиля.
+        status:
+          $ref: '#/components/schemas/Status'
+        brand:
+          type: string
+          description: Марка автомобиля.
+        carModel:
+          type: string
+          description: Название модели автомобиля.
+        color:
+          $ref: '#/components/schemas/Color'
+        plateNumber:
+          type: string
+          description: Государственный номер автомобиля.
+        fuelLevelPercents:
+          type: integer
+          description: Уровень топлива в процентах.
+        vin:
+          type: string
+          description: VIN-номер автомобиля.
+        location:
+          $ref: '#/components/schemas/Location'
+        pricePerMin:
+          type: number
+          format: double
+          description: Стоимость аренды за минуту.
+        pricePerHour:
+          type: number
+          format: double
+          description: Стоимость аренды за час.
+        pricePerDay:
+          type: number
+          format: double
+          description: Стоимость аренды за день.
+    GetVehiclesInSquareReq:
+      type: object
+      required:
+        - filteringStatus
+        - upperLeftLocation
+        - lowerRightLocation
+      properties:
+        filteringStatus:
+          $ref: '#/components/schemas/Status'
+        upperLeftLocation:
+          $ref: '#/components/schemas/Location'
+        lowerRightLocation:
+          $ref: '#/components/schemas/Location'
+    GetVehiclesInSquareRes:
+      type: object
+      required:
+        - vehicles
+      properties:
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleInSquareShortView'
+          description: Список автомобилей в указанном регионе.
+    VehicleInSquareShortView:
+      type: object
+      required:
+        - vehicleId
+        - status
+        - brand
+        - carModel
+        - fuelLevelPercents
+        - location
+      properties:
+        vehicleId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор автомобиля.
+        status:
+          $ref: '#/components/schemas/Status'
+        brand:
+          type: string
+          description: Марка автомобиля.
+        carModel:
+          type: string
+          description: Название модели автомобиля.
+        color:
+          $ref: '#/components/schemas/Color'
+        location:
+          $ref: '#/components/schemas/Location'
+    AddOsagoRequest:
+      type: object
+      required:
+        - vehicleDocumentsId
+        - photoBytes
+        - dateOfIssue
+        - dateOfExpiry
+      properties:
+        vehicleDocumentsId:
+          type: string
+          format: uuid
+        photoBytes:
+          type: string
+          format: byte
+          description: Фотография ОСАГО в бинарном формате.
+        dateOfIssue:
+          type: string
+          format: date
+          description: Дата начала действия ОСАГО.
+        dateOfExpiry:
+          type: string
+          format: date
+          description: Дата окончания действия ОСАГО.
+    GetOsagoByVehicleDocumentsIdResponse:
+      type: object
+      required:
+        - photoS3Url
+        - osagoStatus
+        - dateOfIssue
+        - dateOfExpiry
+      properties:
+        photoS3Url:
+          type: string
+          description: URL фотографии ОСАГО в хранилище S3.
+        osagoStatus:
+          $ref: '#/components/schemas/OsagoStatus'
+        dateOfIssue:
+          type: string
+          format: date
+          description: Серия ОСАГО.
+        dateOfExpiry:
+          type: string
+          format: date
+          description: Дата окончания действия ОСАГО.
+    AddPtsRequest:
+      type: object
+      required:
+        - frontPhotoBytes
+        - backPhotoBytes
+        - yearOfManufacture
+        - color
+        - vin
+      properties:
+        frontPhotoBytes:
+          type: string
+          format: byte
+          description: Фотография лицевой стороны ПТС в бинарном формате.
+        backPhotoBytes:
+          type: string
+          format: byte
+          description: Фотография обратной стороны ПТС в бинарном формате.
+        yearOfManufacture:
+          type: string
+          format: date-time
+          description: Год выпуска автомобиля.
+        color:
+          $ref: '#/components/schemas/Color'
+        vin:
+          type: string
+          description: VIN-номер автомобиля.
+    GetPtsByVehicleDocumentsIdResponse:
+      type: object
+      required:
+        - frontPhotoS3Url
+        - backPhotoS3Url
+        - yearOfManufacture
+        - color
+        - vin
+      properties:
+        frontPhotoS3Url:
+          type: string
+          description: URL фотографии лицевой стороны ПТС в хранилище S3.
+        backPhotoS3Url:
+          type: string
+          description: URL фотографии обратной стороны ПТС в хранилище S3.
+        yearOfManufacture:
+          type: string
+          format: date-time
+          description: Год выпуска автомобиля.
+        color:
+          $ref: '#/components/schemas/Color'
+        vin:
+          type: string
+          description: VIN-номер автомобиля.
+    AddStsRequest:
+      type: object
+      required:
+        - frontPhotoBytes
+        - backPhotoBytes
+      properties:
+        frontPhotoBytes:
+          type: string
+          format: byte
+          description: Фотография лицевой стороны СТС в бинарном формате.
+        backPhotoBytes:
+          type: string
+          format: byte
+          description: Фотография обратной стороны СТС в бинарном формате.
+    GetStsByVehicleDocumentsIdResponse:
+      type: object
+      required:
+        - frontPhotoS3Url
+        - backPhotoS3Url
+      properties:
+        frontPhotoS3Url:
+          type: string
+          description: URL фотографии лицевой стороны СТС в хранилище S3.
+        backPhotoS3Url:
+          type: string
+          description: URL фотографии обратной стороны СТС в хранилище S3.
+    GetVehicleDocumentsByVehicleIdResponse:
+      type: object
+      required:
+        - vehicleDocumentsId
+        - vehicleId
+        - status
+      properties:
+        vehicleDocumentsId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор комплекта документов на автомобиль.
+        vehicleId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор автомобиля.
+        status:
+          type: object
+          required:
+            - isPtsAdded
+            - isStsAdded
+            - isOsagoAdded
+          properties:
+            isPtsAdded:
+              type: boolean
+              description: Наличие ПТС.
+            isStsAdded:
+              type: boolean
+              description: Наличие СТС.
+            isOsagoAdded:
+              type: boolean
+              description: Наличие ОСАГО.
+    GetAllCurrentRentsResponse:
+      type: object
+      required:
+        - rents
+      properties:
+        rents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rent'
+          description: Список текущих аренд.
+    Rent:
+      type: object
+      required:
+        - rentId
+        - vehicleId
+        - customerId
+        - start
+      properties:
+        rentId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор аренды.
+        vehicleId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор автомобиля.
+        customerId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор работника.
+        start:
+          type: string
+          format: date-time
+          description: Дата и время начала аренды.
+    RentStatus:
+      type: string
+      enum:
+        - inProgress
+        - completed
+      description: Статус аренды.
+    GetRentByIdResponse:
+      type: object
+      required:
+        - rentId
+        - bookingId
+        - vehicleId
+        - customerId
+        - start
+        - rentStatus
+      properties:
+        rentId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор аренды.
+        vehicleId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор автомобиля.
+        bookingId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор бронирования.
+        customerId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор работника.
+        start:
+          type: string
+          format: date-time
+          description: Дата и время начала аренды.
+        end:
+          type: string
+          format: date-time
+          description: Дата и время окончания аренды.
+        actualAmount:
+          type: number
+          format: double
+          description: Общая стоимость аренды.
+        rentStatus:
+          $ref: '#/components/schemas/RentStatus'
+    GetCurrentAmountRentResponse:
+      type: object
+      required:
+        - currentAmount
+      properties:
+        currentAmount:
+          type: number
+          format: double
+          description: Текущая стоимость аренды.
+    GetLicenseByIdResponse:
+      type: object
+      required:
+        - id
+        - accId
+        - status
+        - categories
+        - number
+        - name
+        - cityOfBirth
+        - dateOfBirth
+        - codeOfIssue
+        - dateOfIssue
+        - dateOfExpiry
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор водительского удостоверения
+        customerId:
+          type: string
+          format: uuid
+          description: Идентификатор аккаунта владельца
+        status:
+          $ref: '#/components/schemas/DrivingLicenseStatus'
+        categories:
+          type: array
+          items:
+            type: string
+            maxLength: 1
+            example: 'B'
+          description: Категории водительского удостоверения
+        number:
+          type: string
+          description: Номер водительского удостоверения
+        name:
+          type: string
+          description: ФИО владельца
+        cityOfBirth:
+          type: string
+          description: Город рождения
+        dateOfBirth:
+          type: string
+          format: date
+          description: Дата рождения
+        codeOfIssue:
+          type: string
+          description: Код подразделения выдачи
+        dateOfIssue:
+          type: string
+          format: date
+          description: Дата выдачи
+        dateOfExpiry:
+          type: string
+          format: date
+          description: Дата окончания действия
+        frontPhotoS3Url:
+          type: string
+          description: URL фотографии лицевой стороны в S3
+          nullable: true
+        backPhotoS3Url:
+          type: string
+          description: URL фотографии обратной стороны в S3
+          nullable: true
+    GetAllLicensesResponse:
+      type: object
+      required:
+        - drivingLicenses
+        - totalCount
+      properties:
+        drivingLicenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/DrivingLicenseShortView'
+          description: Список всех водительских удостоверений.
+    DrivingLicenseShortView:
+      type: object
+      required:
+        - licenseId
+        - customerId
+        - status
+      properties:
+        licenseId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор водительского удостоверения.
+        customerId:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор работника, которому принадлежит удостоверение.
+        status:
+          $ref: '#/components/schemas/DrivingLicenseStatus'
+    DrivingLicenseStatus:
+      type: string
+      enum:
+        - pendingPhotosAdding
+        - pendingProcessing
+        - approved
+        - rejected
+        - expired
+      description: Статус водительского удостоверения.
+    FixationCategory:
+      type: string
+      enum:
+        - minorDamage
+        - significantDamage
+      description: Категория повреждения автомобиля.
+    Color:
+      type: string
+      enum:
+        - white
+        - grey
+        - black
+        - blue
+        - red
+        - yellow
+        - orange
+        - green
+        - beige
+      description: Цвет автомобиля
+      example: blue
+    OsagoStatus:
+      type: string
+      enum:
+        - notExpiredUnspecified
+        - expired
+      description: |
+        Статус истечения срока действия ОСАГО:
+        * `notExpiredUnspecified` - ОСАГО не истекло (значение по умолчанию)
+        * `expired` - ОСАГО истекло
+      example: notExpiredUnspecified

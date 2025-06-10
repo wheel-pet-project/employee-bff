@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clients", "Clients\Clients.csproj", "{C19C4FD0-B411-450C-9AA1-6FFB8D0B6018}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gateway", "Gateway\Gateway.csproj", "{9A1C49A1-1D87-400A-B03B-0A2CCDCAAE3C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C19C4FD0-B411-450C-9AA1-6FFB8D0B6018}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C19C4FD0-B411-450C-9AA1-6FFB8D0B6018}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C19C4FD0-B411-450C-9AA1-6FFB8D0B6018}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C19C4FD0-B411-450C-9AA1-6FFB8D0B6018}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A1C49A1-1D87-400A-B03B-0A2CCDCAAE3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A1C49A1-1D87-400A-B03B-0A2CCDCAAE3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A1C49A1-1D87-400A-B03B-0A2CCDCAAE3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A1C49A1-1D87-400A-B03B-0A2CCDCAAE3C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

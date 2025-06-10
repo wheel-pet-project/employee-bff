@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Api";
+
+package vehiclecheck.v1;
+
+service VehicleCheck {
+  rpc StartCheck (StartCheckRequest) returns (StartCheckResponse);
+  rpc AddDamageFixations (AddDamageFixationsRequest) returns (AddDamageFixationsResponse);
+  rpc CompleteCheck (CompleteCheckRequest) returns (CompleteCheckResponse);
+  rpc GetCheckById (GetCheckByIdRequest) returns (GetCheckByIdResponse);
+  rpc GetAllChecksForConsiderateReview (GetAllChecksForConsiderateReviewRequest) returns (GetAllChecksForConsiderateReviewResponse);
+}
+
+enum FixationCategory{
+  MINOR_DAMAGE_UNSPECIFIED = 0;
+  SIGNIFICANT_DAMAGE = 1;
+}
+
+
+// Commands
+
+message StartCheckRequest{
+  string booking_id = 1;
+}
+message StartCheckResponse{
+  string check_id = 1;
+}
+
+
+message AddDamageFixationsRequest{
+  string check_id = 1;
+  repeated Fixation fixations = 2;
+  message Fixation{
+    bytes photo_bytes = 1;
+    FixationCategory category = 2;
+    optional string description = 3;
+  }
+}
+message AddDamageFixationsResponse{}
+
+
+message CompleteCheckRequest{
+  string check_id = 1;
+}
+message CompleteCheckResponse{}
+
+
+// Queries
+
+message GetCheckByIdRequest{
+  string check_id = 1;
+}
+message GetCheckByIdResponse{
+  string check_id = 1;
+  string booking_id = 2;
+  string vehicle_id = 3;
+  google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp end = 5;
+  repeated Fixation fixations = 6;
+  message Fixation{
+    string s3Url = 1;
+    FixationCategory category = 2;
+    optional string description = 3;
+  }
+}
+
+
+message GetAllChecksForConsiderateReviewRequest{
+  optional int32 page = 1;
+  optional int32 page_size = 2;
+}
+message GetAllChecksForConsiderateReviewResponse{
+  repeated Check checks = 1;
+  message Check{
+    string check_id = 1;
+    string booking_id = 2;
+    string vehicle_id = 3;
+    google.protobuf.Timestamp start = 4;
+    optional google.protobuf.Timestamp end = 5;
+  }
+}
+
+
