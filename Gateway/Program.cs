@@ -22,15 +22,15 @@ public class Program
     {
         var services = builder.Services;
 
-        // services
-        //     .RegisterExceptionHandlerMiddleware()
-        //     .RegisterGrpcClientsAndConfigure()
-        //     .RegisterGrpcClientWrappers()
-        //     .RegisterInterceptors()
-        //     .RegisterControllersWithNewtonsoft()
-        //     .RegisterSwagger()
-        //     .RegisterSerilog()
-        //     .RegisterTelemetry();
+        services
+            .RegisterExceptionHandlerMiddleware()
+            .RegisterGrpcClientsAndConfigure()
+            .RegisterGrpcClientWrappers()
+            .RegisterInterceptors()
+            .RegisterControllersWithNewtonsoft()
+            .RegisterSwagger()
+            .RegisterSerilog()
+            .RegisterTelemetry();
     }
 
     private static void ConfigureAppForDeveloperEnvironment(WebApplication app)
