@@ -1,4 +1,5 @@
 using Grpc.Core;
+using OpenApiContractV1.Models;
 
 namespace Gateway.Middlewares;
 
@@ -35,18 +36,16 @@ public class ExceptionHandlerMiddleware(ILogger<ExceptionHandlerMiddleware> logg
 
     private async Task ChangeResponse(HttpContext context, int statusCode, string description)
     {
-        // todo: add implementation after generation models from openapi 
+        var error = new Error
+        {
+            Description = description,
+            StatusCode = statusCode,
+        };
 
-        // var error = new Error
-        // { 
-        //     Description = description,
-        //     StatusCode = statusCode,
-        // };
-        //
-        // context.Response.Clear();
-        // context.Response.ContentType = "application/json";
-        // context.Response.StatusCode = statusCode;
-        // await context.Response.WriteAsJsonAsync(error);
+        context.Response.Clear();
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = statusCode;
+        await context.Response.WriteAsJsonAsync(error);
     }
 }
 

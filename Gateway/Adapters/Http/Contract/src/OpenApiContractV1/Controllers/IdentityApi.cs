@@ -70,19 +70,16 @@ namespace OpenApiContractV1.Controllers
         /// <summary>
         /// Восстановление пароля
         /// </summary>
-        /// <param name="accountId">Идентификатор аккаунта</param>
-        /// <param name="recoverPasswordRequest"></param>
+        /// <param name="request"></param>
         /// <response code="200">Успешная операция</response>
         /// <response code="500">Внутренняя ошибка сервера</response>
         /// <response code="404">Аккаунт с таким идентификатором не найден</response>
         [HttpPost]
-        [Route("/v1.0/identity/account/{accountId}/recover-password")]
+        [Route("/v1.0/identity/account/recover-password")]
         [Consumes("application/json")]
         [ValidateModelState]
         [SwaggerOperation("RecoverPassword")]
-        public abstract Task<IActionResult> RecoverPassword(
-            [FromRoute(Name = "accountId")] [Required] Guid accountId,
-            [FromBody] RecoverPasswordRequest recoverPasswordRequest);
+        public abstract Task<IActionResult> RecoverPassword([FromBody] RecoverPasswordRequest request);
 
         /// <summary>
         /// Обновление токена доступа
@@ -103,18 +100,15 @@ namespace OpenApiContractV1.Controllers
         /// <summary>
         /// Обновление пароля
         /// </summary>
-        /// <param name="accountId">Идентификатор аккаунта</param>
         /// <param name="updatePasswordRequest"></param>
         /// <response code="200">Успешная операция</response>
         /// <response code="500">Внутренняя ошибка сервера</response>
         /// <response code="404">Аккаунт с таким идентификатором не найден</response>
         [HttpPost]
-        [Route("/v1.0/identity/account/{accountId}/update-password")]
+        [Route("/v1.0/identity/account/update-password")]
         [Consumes("application/json")]
         [ValidateModelState]
         [SwaggerOperation("UpdatePassword")]
-        public abstract Task<IActionResult> UpdatePassword(
-            [FromRoute(Name = "accountId")] [Required] Guid accountId,
-            [FromBody] UpdatePasswordRequest updatePasswordRequest);
+        public abstract Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest updatePasswordRequest);
     }
 }

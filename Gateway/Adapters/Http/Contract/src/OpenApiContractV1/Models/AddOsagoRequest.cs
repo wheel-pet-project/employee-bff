@@ -22,13 +22,6 @@ namespace OpenApiContractV1.Models
     public partial class AddOsagoRequest : IEquatable<AddOsagoRequest>
     {
         /// <summary>
-        /// Gets or Sets VehicleDocumentsId
-        /// </summary>
-        [Required]
-        [DataMember(Name = "vehicleDocumentsId", EmitDefaultValue = true)]
-        public Guid VehicleDocumentsId { get; set; }
-
-        /// <summary>
         /// Фотография ОСАГО в бинарном формате.
         /// </summary>
         /// <value>Фотография ОСАГО в бинарном формате.</value>
@@ -60,7 +53,6 @@ namespace OpenApiContractV1.Models
         {
             var sb = new StringBuilder();
             sb.Append("class AddOsagoRequest {\n");
-            sb.Append("  VehicleDocumentsId: ").Append(VehicleDocumentsId).Append("\n");
             sb.Append("  PhotoBytes: ").Append(PhotoBytes).Append("\n");
             sb.Append("  DateOfIssue: ").Append(DateOfIssue).Append("\n");
             sb.Append("  DateOfExpiry: ").Append(DateOfExpiry).Append("\n");
@@ -101,10 +93,6 @@ namespace OpenApiContractV1.Models
 
             return
                 (
-                    VehicleDocumentsId == other.VehicleDocumentsId ||
-                    VehicleDocumentsId.Equals(other.VehicleDocumentsId)
-                ) &&
-                (
                     PhotoBytes == other.PhotoBytes ||
                     PhotoBytes != null &&
                     PhotoBytes.Equals(other.PhotoBytes)
@@ -129,8 +117,6 @@ namespace OpenApiContractV1.Models
             {
                 var hashCode = 41;
                 // Suitable nullity checks etc, of course :)
-
-                hashCode = hashCode * 59 + VehicleDocumentsId.GetHashCode();
                 if (PhotoBytes != null)
                     hashCode = hashCode * 59 + PhotoBytes.GetHashCode();
 

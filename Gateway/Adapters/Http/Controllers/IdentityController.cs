@@ -49,14 +49,12 @@ public class IdentityController(IdentityClientWrapper clientWrapper) : IdentityA
         }
     }
 
-    public override async Task<IActionResult> RecoverPassword(Guid accountId, RecoverPasswordRequest request)
+    public override async Task<IActionResult> RecoverPassword(RecoverPasswordRequest request)
     {
-        // todo: убрать из openapi accountID
         await clientWrapper.RecoverPassword(new Proto.IdentityV1.RecoverPasswordRequest { Email = request.Email });
 
         return Ok();
     }
-
 
     public override async Task<IActionResult> RefreshAccessToken(RefreshAccessTokenRequest request)
     {
@@ -72,9 +70,8 @@ public class IdentityController(IdentityClientWrapper clientWrapper) : IdentityA
         }
     }
 
-    public override async Task<IActionResult> UpdatePassword(Guid accountId, UpdatePasswordRequest request)
+    public override async Task<IActionResult> UpdatePassword(UpdatePasswordRequest request)
     {
-        // todo: убрать из openapi accountID
         await clientWrapper.UpdatePassword(new Proto.IdentityV1.UpdatePasswordRequest
             { Email = request.Email, ResetTkn = request.ResetToken.ToString(), NewPass = request.NewPassword });
 

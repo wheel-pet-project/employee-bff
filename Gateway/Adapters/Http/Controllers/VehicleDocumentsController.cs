@@ -19,7 +19,6 @@ namespace Gateway.Adapters.Http.Controllers;
 
 public class VehicleDocumentsController(VehicleDocumentsClientWrapper clientWrapper) : VehicleDocumentsApiController
 {
-    // todo: убрать vehicleDocumentsId из запроса
     public override async Task<IActionResult> AddOsago(Guid vehicleDocumentsId, AddOsagoRequest request)
     {
         await clientWrapper.AddOsago(new Api.AddOsagoRequest

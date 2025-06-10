@@ -115,20 +115,12 @@ paths:
           description: Внутренняя ошибка сервера
         '404':
           description: Refresh token с таким идентификатором не найден
-  /v1.0/identity/account/{accountId}/recover-password:
+  /v1.0/identity/account/recover-password:
     post:
       operationId: recoverPassword
       tags:
         - identity
       summary: Восстановление пароля
-      parameters:
-        - name: accountId
-          in: path
-          description: Идентификатор аккаунта
-          required: true
-          schema:
-            type: string
-            format: uuid
       requestBody:
         required: true
         content:
@@ -142,20 +134,12 @@ paths:
           description: Внутренняя ошибка сервера
         '404':
           description: Аккаунт с таким идентификатором не найден
-  /v1.0/identity/account/{accountId}/update-password:
+  /v1.0/identity/account/update-password:
     post:
       operationId: updatePassword
       tags:
         - identity
       summary: Обновление пароля
-      parameters:
-        - name: accountId
-          in: path
-          description: Идентификатор аккаунта
-          required: true
-          schema:
-            type: string
-            format: uuid
       requestBody:
         required: true
         content:
@@ -1550,14 +1534,10 @@ components:
     AddOsagoRequest:
       type: object
       required:
-        - vehicleDocumentsId
         - photoBytes
         - dateOfIssue
         - dateOfExpiry
       properties:
-        vehicleDocumentsId:
-          type: string
-          format: uuid
         photoBytes:
           type: string
           format: byte
