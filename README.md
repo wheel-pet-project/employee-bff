@@ -1,4 +1,4 @@
-# BFF (Backend for Frontend) - Employee Portal
+# Employee BFF (Backend for Frontend)
 
 BFF сервис для приложения сотрудников пет-проекта Wheel
 
